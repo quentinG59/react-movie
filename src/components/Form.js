@@ -5,15 +5,17 @@ import Card from "./Card";
 
 const Form = () => {
   const [moviesData, setMoviesData] = useState([]);
+  const [search, setSearch] = useState("code");
+  const [sortGoodBad, setSortGoodBad] = useState(null);
   //UseEffect Permet de jouer une fonction des que le composant et monter ca le joue 1 fois
   useEffect(() => {
     //permet d'aller chercher
     axios
       .get(
-        `https://api.themoviedb.org/3/search/movie?api_key=64fcb978d7df8a9d608cb292521e1109&query=avenger&language=fr-FR`
+        `https://api.themoviedb.org/3/search/movie?api_key=64fcb978d7df8a9d608cb292521e1109&query=${search}&language=fr-FR`
       )
       .then((res) => setMoviesData(res.data.results));
-  }, []);
+  }, [search]);
 
   return (
     <div className="form-component">
@@ -23,14 +25,23 @@ const Form = () => {
             type="text"
             placeholder="Entrez le titre d'un film"
             id="search-input"
+            onChange={(e) => setSearch(e.target.value)}
           />
           <input type="submit" value="Rechercher" />
         </form>
         <div className="btn-sort-container">
-          <div className="btn-sort" id="goodToBad">
+          <div
+            className="btn-sort"
+            id="goodToBad"
+            onClick={() => setSortGoodBad("goodToBad")}
+          >
             Top <span> →</span>
           </div>
-          <div className="btn-sort" id="badToGood">
+          <div
+            className="btn-sort"
+            id="badToGood"
+            onClick={() => setSortGoodBad("badToGood")}
+          >
             Flop <span> →</span>
           </div>
         </div>
@@ -38,9 +49,19 @@ const Form = () => {
       <div className="result">
         {/* slice() renvoie un objet tableau, contenant une copie superficielle
         d'une portion du tableau d'origine */}
-        {moviesData.slice(0, 12).map((movie) => (
-          <Card key={movie.id} movie={movie} />
-        ))}
+        {moviesData
+          .slice(0, 12)
+          // a est plus petit que b
+          .sort((a, b) => {
+            if (sortGoodBad === "goodToBad") {
+              return b.vote_average - a.vote_average;
+            } else if (sortGoodBad === "badToGood") {
+              return a.vote_average - b.vote_average;
+            }
+          })
+          .map((movie) => (
+            <Card key={movie.id} movie={movie} />
+          ))}
       </div>
     </div>
   );
